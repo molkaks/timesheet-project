@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-timesheet
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: timesheet-devops-db
+      MYSQL_USER: timesheet
+      MYSQL_PASSWORD: timesheet123
+    ports:
+      - "3306:3306"
+    volumes:
+      - timesheetvol:/var/lib/mysql
+    networks:
+      - timesheet-network
+
+  timesheet:
+    image: timesheet-molkaksontini-classe
+    container_name: timesheet-app
+    depends_on:
+      - mysql
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-timesheet:3306/timesheet-devops-db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root123
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SERVER_PORT: 8082
+    networks:
+      - timesheet-network
+    restart: on-failure
+
+volumes:
+  timesheetvol:
+
+networks:
+  timesheet-network:
+    driver: bridge
